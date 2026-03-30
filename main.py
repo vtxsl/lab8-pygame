@@ -5,15 +5,14 @@ import pygame
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
 FPS = 120
-NUM_SQUARES = 10
+NUM_SQUARES = 15
 SIZE_MIN = 20
-SIZE_MAX = 80
-SPEED_MIN = 2
-SPEED_MAX = 5
+SIZE_MAX = 70
+SPEED_MIN = 1
+GLOBAL_MAX_SPEED = 8
 COLOR_BG = (24, 24, 32)
 COLOR_FPS = (245, 245, 245)
 FPS_TEXT_POS = (10, 10)
-
 
 @dataclass
 class Square:
@@ -40,41 +39,36 @@ class Square:
     def draw(self, surface: pygame.Surface) -> None:
         pygame.draw.rect(surface, self.color, self.rect)
 
-
-def random_velocity() -> int:
-    speed = random.randint(SPEED_MIN, SPEED_MAX)
-    return random.choice([-1, 1]) * speed
-
-
 def random_square(existing: list[Square]) -> Square:
+    size = random.randint(SIZE_MIN, SIZE_MAX)
+    
+    size_factor = (size - SIZE_MIN) / (SIZE_MAX - SIZE_MIN)
+    local_max = int(GLOBAL_MAX_SPEED - (size_factor * (GLOBAL_MAX_SPEED - SPEED_MIN)))
+    local_max = max(SPEED_MIN, local_max)   
+
     for _ in range(300):
         rect = pygame.Rect(
-            random.randint(0, WINDOW_WIDTH - SQUARE_SIZE),
-            random.randint(0, WINDOW_HEIGHT - SQUARE_SIZE),
-            SQUARE_SIZE,
-            SQUARE_SIZE,
+            random.randint(0, WINDOW_WIDTH - size),
+            random.randint(0, WINDOW_HEIGHT - size),
+            size,
+            size,
         )
         if not any(rect.colliderect(s.rect) for s in existing):
             return Square(
                 rect=rect,
-                vx=random_velocity(),
-                vy=random_velocity(),
-                size=SQUARE_SIZE,
-                color=(
-                    random.randint(60, 255),
-                    random.randint(60, 255),
-                    random.randint(60, 255),
-                ),
+                vx=random.choice([-1, 1]) * random.randint(SPEED_MIN, local_max),
+                vy=random.choice([-1, 1]) * random.randint(SPEED_MIN, local_max),
+                size=size,
+                color=(random.randint(60, 255), random.randint(60, 255), random.randint(60, 255)),
             )
 
     return Square(
-        rect=pygame.Rect(0, 0, SQUARE_SIZE, SQUARE_SIZE),
-        vx=random_velocity(),
-        vy=random_velocity(),
-        size=SQUARE_SIZE,
+        rect=pygame.Rect(0, 0, SIZE_MIN, SIZE_MIN),
+        vx=SPEED_MIN,
+        vy=SPEED_MIN,
+        size=SIZE_MIN,
         color=(200, 200, 200),
     )
-
 
 def resolve_square_collisions(squares: list[Square]) -> None:
     for i in range(len(squares)):
@@ -85,12 +79,8 @@ def resolve_square_collisions(squares: list[Square]) -> None:
             if not first.rect.colliderect(second.rect):
                 continue
 
-            overlap_x = min(first.rect.right, second.rect.right) - max(
-                first.rect.left, second.rect.left
-            )
-            overlap_y = min(first.rect.bottom, second.rect.bottom) - max(
-                first.rect.top, second.rect.top
-            )
+            overlap_x = min(first.rect.right, second.rect.right) - max(first.rect.left, second.rect.left)
+            overlap_y = min(first.rect.bottom, second.rect.bottom) - max(first.rect.top, second.rect.top)
 
             first.vx, second.vx = second.vx, first.vx
             first.vy, second.vy = second.vy, first.vy
@@ -110,23 +100,16 @@ def resolve_square_collisions(squares: list[Square]) -> None:
                     first.rect.y += overlap_y - overlap_y // 2
                     second.rect.y -= overlap_y // 2
 
-
 def create_squares() -> list[Square]:
     squares: list[Square] = []
     for _ in range(NUM_SQUARES):
         squares.append(random_square(squares))
     return squares
 
-
-def draw_fps(
-    surface: pygame.Surface,
-    font: pygame.font.Font,
-    clock: pygame.time.Clock,
-) -> None:
+def draw_fps(surface: pygame.Surface, font: pygame.font.Font, clock: pygame.time.Clock) -> None:
     fps_value = int(clock.get_fps())
     fps_surface = font.render(f"FPS: {fps_value}", True, COLOR_FPS)
     surface.blit(fps_surface, FPS_TEXT_POS)
-
 
 def main() -> None:
     pygame.init()
@@ -134,7 +117,6 @@ def main() -> None:
     pygame.display.set_caption("Bouncing Squares")
     clock = pygame.time.Clock()
     font = pygame.font.Font(None, 28)
-
     squares = create_squares()
     running = True
 
@@ -147,17 +129,13 @@ def main() -> None:
             square.update(WINDOW_WIDTH, WINDOW_HEIGHT)
 
         resolve_square_collisions(squares)
-
         screen.fill(COLOR_BG)
         for square in squares:
             square.draw(screen)
         draw_fps(screen, font, clock)
-
         pygame.display.flip()
         clock.tick(FPS)
-
     pygame.quit()
-
 
 if __name__ == "__main__":
     main()
