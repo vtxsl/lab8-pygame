@@ -17,3 +17,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 30-03-2026 14:09
 - **Prompt**: could you make it simple and make them bounce off of each other and the edges  use a venv and install pygame and implement it
 
+### 30-03-2026 14:29
+- **Prompt**: how could i implement an active fps counter on the top left of the screen
+
