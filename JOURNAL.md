@@ -49,3 +49,18 @@
 - **Hook Version**: 1.02
 - **Date**: 30-03-2026 13:57
 - **Prompt**: could u change the code to use pygamece instead of pygame
+### **New Interaction**
+- **Agent Version**: 2.2
+- **Date**: 30-03-2026 13:59
+- **User**: vatsal.rana@epita.fr
+- **Prompt**: could u change the code to use pygamece instead of pygame
+- **CoPilot Mode**: Edit
+- **CoPilot Model**: GPT-5.3-Codex
+- **Socratic Mode**: OFF
+- **Changes Made**: Added a pygame-ce runtime guard in main.py and installed pygame-ce in the project virtual environment.
+- **Context and Reasons for Changes**: pygame-ce uses the pygame import name, so the code now verifies IS_CE at startup to ensure the CE fork is used and not legacy pygame.
+
+### **New Interaction**
+- **Hook Version**: 1.02
+- **Date**: 30-03-2026 14:09
+- **Prompt**: could you make it simple and make them bounce off of each other and the edges  use a venv and install pygame and implement it

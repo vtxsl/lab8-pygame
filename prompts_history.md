@@ -14,3 +14,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 30-03-2026 13:57
 - **Prompt**: could u change the code to use pygamece instead of pygame
 
+### 30-03-2026 14:09
+- **Prompt**: could you make it simple and make them bounce off of each other and the edges  use a venv and install pygame and implement it
+
