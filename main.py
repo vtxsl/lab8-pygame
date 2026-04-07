@@ -4,8 +4,8 @@ import pygame
 
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
-FPS = 120
-NUM_SQUARES = 15
+FPS = 60
+NUM_SQUARES = 10
 SIZE_MIN = 20
 SIZE_MAX = 70
 SPEED_MIN = 1
@@ -71,34 +71,35 @@ def random_square(existing: list[Square]) -> Square:
     )
 
 def resolve_square_collisions(squares: list[Square]) -> None:
-    for i in range(len(squares)):
-        for j in range(i + 1, len(squares)):
-            first = squares[i]
-            second = squares[j]
+    # for i in range(len(squares)):
+    #     for j in range(i + 1, len(squares)):
+    #         first = squares[i]
+    #         second = squares[j]
 
-            if not first.rect.colliderect(second.rect):
-                continue
+    #         if not first.rect.colliderect(second.rect):
+    #             continue
 
-            overlap_x = min(first.rect.right, second.rect.right) - max(first.rect.left, second.rect.left)
-            overlap_y = min(first.rect.bottom, second.rect.bottom) - max(first.rect.top, second.rect.top)
+    #         overlap_x = min(first.rect.right, second.rect.right) - max(first.rect.left, second.rect.left)
+    #         overlap_y = min(first.rect.bottom, second.rect.bottom) - max(first.rect.top, second.rect.top)
 
-            first.vx, second.vx = second.vx, first.vx
-            first.vy, second.vy = second.vy, first.vy
+    #         first.vx, second.vx = second.vx, first.vx
+    #         first.vy, second.vy = second.vy, first.vy
 
-            if overlap_x < overlap_y:
-                if first.rect.centerx < second.rect.centerx:
-                    first.rect.x -= overlap_x // 2
-                    second.rect.x += overlap_x - overlap_x // 2
-                else:
-                    first.rect.x += overlap_x - overlap_x // 2
-                    second.rect.x -= overlap_x // 2
-            else:
-                if first.rect.centery < second.rect.centery:
-                    first.rect.y -= overlap_y // 2
-                    second.rect.y += overlap_y - overlap_y // 2
-                else:
-                    first.rect.y += overlap_y - overlap_y // 2
-                    second.rect.y -= overlap_y // 2
+    #         if overlap_x < overlap_y:
+    #             if first.rect.centerx < second.rect.centerx:
+    #                 first.rect.x -= overlap_x // 2
+    #                 second.rect.x += overlap_x - overlap_x // 2
+    #             else:
+    #                 first.rect.x += overlap_x - overlap_x // 2
+    #                 second.rect.x -= overlap_x // 2
+    #         else:
+    #             if first.rect.centery < second.rect.centery:
+    #                 first.rect.y -= overlap_y // 2
+    #                 second.rect.y += overlap_y - overlap_y // 2
+    #             else:
+    #                 first.rect.y += overlap_y - overlap_y // 2
+    #                 second.rect.y -= overlap_y // 2
+    pass
 
 def create_squares() -> list[Square]:
     squares: list[Square] = []
