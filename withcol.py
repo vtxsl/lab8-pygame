@@ -1,7 +1,6 @@
 import random
 from dataclasses import dataclass
 import pygame
-import math
 
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
@@ -102,58 +101,6 @@ def resolve_square_collisions(squares: list[Square]) -> None:
     #                 second.rect.y -= overlap_y // 2
     pass
 
-def apply_flee_behavior(
-    squares: list[Square],
-    danger_radius: int = 180,
-    max_flee_step: int = 1,
-) -> None:
-    """
-    TODO (you implement):
-    1) For each square, identify larger squares within danger_radius.
-    2) Build an 'away' direction vector from those threats.
-    3) Convert that vector into small velocity nudges (vx, vy).
-    4) Clamp resulting speed so nothing exceeds GLOBAL_MAX_SPEED.
-    5) Keep behavior stable (avoid jitter / divide-by-zero / no-threat case).
-    """
-    # Task A: loop each potential fleeing square
-    for current in squares:
-        dx_total, dy_total = 0, 0
-        has_threat = False
-
-        threats: list[Square] = []
-        for other in squares:
-            if other is current or  other.size <= current.size:
-                continue
-            dx = current.rect.centerx - other.rect.centerx
-            dy = current.rect.centery - other.rect.centery
-            dist = math.hypot(dx, dy)
-        
-        if not threats:
-            continue
-
-        # Task C: compute combined flee direction (away from threats)
-        if 0 < dist < danger_radius:
-
-                dx_total += (dx / dist)
-                dy_total += (dy / dist)
-                has_threat = True
-                
-        
-
-        # Task D: convert direction to integer nudges
-        # step_x = ...
-        # step_y = ...
-
-        # Task E: apply nudges carefully
-        # current.vx += step_x
-        # current.vy += step_y
-
-        # Task F: clamp speed to GLOBAL_MAX_SPEED (both axes or vector magnitude)
-        # current.vx = ...
-        # current.vy = ...
-        pass
-
-
 def create_squares() -> list[Square]:
     squares: list[Square] = []
     for _ in range(NUM_SQUARES):
@@ -183,7 +130,6 @@ def main() -> None:
             square.update(WINDOW_WIDTH, WINDOW_HEIGHT)
 
         resolve_square_collisions(squares)
-        apply_flee_behavior(squares)
         screen.fill(COLOR_BG)
         for square in squares:
             square.draw(screen)
