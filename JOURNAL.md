@@ -91,3 +91,8 @@ use a venv and install pygame and implement it
 - **Socratic Mode**: OFF
 - **Changes Made**: Added a live FPS counter renderer in main.py, including FPS text constants, a draw_fps helper, font initialization, and per-frame top-left blit.
 - **Context and Reasons for Changes**: User asked for an active on-screen FPS counter at the top-left; implementation updates every frame using clock.get_fps().
+
+### **New Interaction**
+- **Hook Version**: 1.02
+- **Date**: 07-04-2026 11:33
+- **Prompt**: dont give me the answer but i want to implement a function that can make the smaller squares flee away from the larger squares. implement a function skeleton with tasks for me to do

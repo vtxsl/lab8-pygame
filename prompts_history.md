@@ -20,3 +20,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 30-03-2026 14:29
 - **Prompt**: how could i implement an active fps counter on the top left of the screen
 
+### 07-04-2026 11:33
+- **Prompt**: dont give me the answer but i want to implement a function that can make the smaller squares flee away from the larger squares. implement a function skeleton with tasks for me to do
+
