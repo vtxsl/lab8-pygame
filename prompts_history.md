@@ -32,3 +32,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 13-04-2026 14:18
 - **Prompt**: Create a code explorer learning dashboard site for the workspace at d:/AIClass/lab8-pygame.  Goals: 1) Analyze all relevant source files in this project (at least main.py and withcol.py, and any markdown files useful for context). 2) Generate a single standalone HTML dashboard file in the repo root named code-explorer.html. 3) The dashboard should explain architecture, key functions/classes, data flow, and runtime behavior of the pygame simulation. 4) Include Mermaid diagrams where appropriate (high-level flow + collision/update/render loop), performance notes, and beginner-friendly explanations. 5) Include a section for 'How to run' and 'Where to modify behavior'. 6) Ensure links and references in the page point to actual workspace files. 7) Keep style readable and modern but lightweight; no external build steps.  Important: - Actually write/update the HTML file in the workspace. - Return in your final report: files created/edited, a concise summary of dashboard sections, and any assumptions. - If project is small, still provide substantial educational depth.
 
+### 13-04-2026 14:46
+- **Prompt**: dont change any code but explain to me what i need to do to change this to be time based instead of frame based
+
