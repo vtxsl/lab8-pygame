@@ -23,3 +23,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 07-04-2026 11:33
 - **Prompt**: dont give me the answer but i want to implement a function that can make the smaller squares flee away from the larger squares. implement a function skeleton with tasks for me to do
 
+### 13-04-2026 14:15
+- **Prompt**: read activate the #file:journal-logger.agent.md and make sure u dont delete anthing in the #file:JOURNAL.md
+
