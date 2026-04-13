@@ -26,3 +26,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 13-04-2026 14:15
 - **Prompt**: read activate the #file:journal-logger.agent.md and make sure u dont delete anthing in the #file:JOURNAL.md
 
+### 13-04-2026 14:17
+- **Prompt**: generate the code explorer site for this project
+
