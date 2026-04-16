@@ -5,12 +5,12 @@ import math
 
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
-FPS = 60
+FPS = 0
 NUM_SQUARES = 10
 SIZE_MIN = 20
 SIZE_MAX = 70
-SPEED_MIN = 1
-GLOBAL_MAX_SPEED = 8
+SPEED_MIN = 60
+GLOBAL_MAX_SPEED = 480 
 COLOR_BG = (24, 24, 32)
 COLOR_FPS = (245, 245, 245)
 FPS_TEXT_POS = (10, 10)
@@ -18,24 +18,32 @@ FPS_TEXT_POS = (10, 10)
 @dataclass
 class Square:
     rect: pygame.Rect
-    vx: int
-    vy: int
+    vx: float
+    vy: float
+    px: float 
+    py: float
     size: int
     color: tuple[int, int, int]
+    death_time: int
 
-    def update(self, width: int, height: int) -> None:
-        self.rect.x += self.vx
-        self.rect.y += self.vy
+    def update(self, width: int, height: int, dt: float) -> bool:
+        self.px += self.vx * dt
+        self.py += self.vy * dt
+        
+        self.rect.x = int(self.px)
+        self.rect.y = int(self.py)
 
         if self.rect.left <= 0 or self.rect.right >= width:
             self.vx *= -1
-            self.rect.left = max(0, self.rect.left)
-            self.rect.right = min(width, self.rect.right)
+            self.px = max(0, min(self.px, width - self.size))
+            self.rect.x = int(self.px)
 
         if self.rect.top <= 0 or self.rect.bottom >= height:
             self.vy *= -1
-            self.rect.top = max(0, self.rect.top)
-            self.rect.bottom = min(height, self.rect.bottom)
+            self.py = max(0, min(self.py, height - self.size))
+            self.rect.y = int(self.py)
+            
+        return pygame.time.get_ticks() < self.death_time
 
     def draw(self, surface: pygame.Surface) -> None:
         pygame.draw.rect(surface, self.color, self.rect)
@@ -47,63 +55,39 @@ def random_square(existing: list[Square]) -> Square:
     local_max = int(GLOBAL_MAX_SPEED - (size_factor * (GLOBAL_MAX_SPEED - SPEED_MIN)))
     local_max = max(SPEED_MIN, local_max)   
 
+    death_time = pygame.time.get_ticks() + (random.randint(10, 30) * 1000)
+
     for _ in range(300):
-        rect = pygame.Rect(
-            random.randint(0, WINDOW_WIDTH - size),
-            random.randint(0, WINDOW_HEIGHT - size),
-            size,
-            size,
-        )
+        x = random.randint(0, WINDOW_WIDTH - size)
+        y = random.randint(0, WINDOW_HEIGHT - size)
+        rect = pygame.Rect(x, y, size, size)
+        
         if not any(rect.colliderect(s.rect) for s in existing):
             return Square(
                 rect=rect,
                 vx=random.choice([-1, 1]) * random.randint(SPEED_MIN, local_max),
                 vy=random.choice([-1, 1]) * random.randint(SPEED_MIN, local_max),
+                px=float(x),
+                py=float(y),
                 size=size,
                 color=(random.randint(60, 255), random.randint(60, 255), random.randint(60, 255)),
+                death_time=death_time
             )
 
     return Square(
         rect=pygame.Rect(0, 0, SIZE_MIN, SIZE_MIN),
-        vx=SPEED_MIN,
-        vy=SPEED_MIN,
-        size=SIZE_MIN,
-        color=(200, 200, 200),
+        vx=SPEED_MIN, vy=SPEED_MIN, px=0.0, py=0.0,
+        size=SIZE_MIN, color=(200, 200, 200),
+        death_time=pygame.time.get_ticks() + 5000
     )
 
 def resolve_square_collisions(squares: list[Square]) -> None:
-    # for i in range(len(squares)):
-    #     for j in range(i + 1, len(squares)):
-    #         first = squares[i]
-    #         second = squares[j]
-
-    #         if not first.rect.colliderect(second.rect):
-    #             continue
-
-    #         overlap_x = min(first.rect.right, second.rect.right) - max(first.rect.left, second.rect.left)
-    #         overlap_y = min(first.rect.bottom, second.rect.bottom) - max(first.rect.top, second.rect.top)
-
-    #         first.vx, second.vx = second.vx, first.vx
-    #         first.vy, second.vy = second.vy, first.vy
-
-    #         if overlap_x < overlap_y:
-    #             if first.rect.centerx < second.rect.centerx:
-    #                 first.rect.x -= overlap_x // 2
-    #                 second.rect.x += overlap_x - overlap_x // 2
-    #             else:
-    #                 first.rect.x += overlap_x - overlap_x // 2
-    #                 second.rect.x -= overlap_x // 2
-    #         else:
-    #             if first.rect.centery < second.rect.centery:
-    #                 first.rect.y -= overlap_y // 2
-    #                 second.rect.y += overlap_y - overlap_y // 2
-    #             else:
-    #                 first.rect.y += overlap_y - overlap_y // 2
-    #                 second.rect.y -= overlap_y // 2
     pass
 
 def apply_flee_behavior(
-    squares: list[Square], danger_radius: int = 180, max_flee_step: int = 1):
+    squares: list[Square], dt: float, danger_radius: int = 180):
+    FLEE_FORCE = 1000.0 
+
     for current in squares:
         dx_total, dy_total = 0, 0
         has_threat = False
@@ -122,15 +106,18 @@ def apply_flee_behavior(
                 has_threat = True
 
         if has_threat:
-            current.vx += int(dx_total + random.uniform(-1, 1))
-            current.vy += int(dy_total + random.uniform(-1, 1))
+            current.vx += (dx_total + random.uniform(-1, 1)) * FLEE_FORCE * dt
+            current.vy += (dy_total + random.uniform(-1, 1)) * FLEE_FORCE * dt
 
             size_factor = (current.size - SIZE_MIN) / (SIZE_MAX - SIZE_MIN)
-            local_max = int(GLOBAL_MAX_SPEED - (size_factor * (GLOBAL_MAX_SPEED - SPEED_MIN)))
+            local_max = GLOBAL_MAX_SPEED - (size_factor * (GLOBAL_MAX_SPEED - SPEED_MIN))
             local_max = max(SPEED_MIN, local_max)
 
-            current.vx = max(-local_max, min(current.vx, local_max))
-            current.vy = max(-local_max, min(current.vy, local_max))
+            # Clamp velocities
+            mag = math.hypot(current.vx, current.vy)
+            if mag > local_max:
+                current.vx = (current.vx / mag) * local_max
+                current.vy = (current.vy / mag) * local_max
 
 def create_squares() -> list[Square]:
     squares: list[Square] = []
@@ -153,21 +140,30 @@ def main() -> None:
     running = True
 
     while running:
+        dt = clock.tick(FPS) / 1000.0
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
+        alive_squares = []
         for square in squares:
-            square.update(WINDOW_WIDTH, WINDOW_HEIGHT)
+            if square.update(WINDOW_WIDTH, WINDOW_HEIGHT, dt):
+                alive_squares.append(square)
+            else:
+                alive_squares.append(random_square(alive_squares))
+        
+        squares = alive_squares
 
         resolve_square_collisions(squares)
-        apply_flee_behavior(squares)
+        apply_flee_behavior(squares, dt)
+        
         screen.fill(COLOR_BG)
         for square in squares:
             square.draw(screen)
         draw_fps(screen, font, clock)
         pygame.display.flip()
-        clock.tick(FPS)
+
     pygame.quit()
 
 if __name__ == "__main__":
