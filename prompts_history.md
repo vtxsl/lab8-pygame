@@ -35,3 +35,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 13-04-2026 14:46
 - **Prompt**: dont change any code but explain to me what i need to do to change this to be time based instead of frame based
 
+### 23-04-2026 14:54
+- **Prompt**: generate the code explorer for #file:main.py
+
