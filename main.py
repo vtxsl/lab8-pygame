@@ -5,8 +5,8 @@ import math
 
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
-FPS = 0
-NUM_SQUARES = 10
+FPS = 120
+NUM_SQUARES = 3
 SIZE_MIN = 20
 SIZE_MAX = 70
 SPEED_MIN = 60
@@ -84,41 +84,55 @@ def random_square(existing: list[Square]) -> Square:
 def resolve_square_collisions(squares: list[Square]) -> None:
     pass
 
-def apply_flee_behavior(
-    squares: list[Square], dt: float, danger_radius: int = 180):
+def apply_flee_behavior(squares: list[Square], dt: float, danger_radius: int = 180):
     FLEE_FORCE = 1000.0 
+    CHASE_FORCE = 1000.0
 
     for current in squares:
-        dx_total, dy_total = 0, 0
+        dx_flee, dy_flee = 0.0, 0.0
+        dx_chase, dy_chase = 0.0, 0.0
         has_threat = False
+        has_target = False
 
         for other in squares:
-            if other is current or other.size <= current.size:
+            if other is current:
                 continue
 
-            dx = current.rect.centerx - other.rect.centerx
-            dy = current.rect.centery - other.rect.centery
+            dx = other.rect.centerx - current.rect.centerx
+            dy = other.rect.centery - current.rect.centery
             dist = math.hypot(dx, dy)
 
             if 0 < dist < danger_radius:
-                dx_total += (dx / dist)
-                dy_total += (dy / dist)
-                has_threat = True
+                nx = dx / dist
+                ny = dy / dist
+                
+                if other.size > current.size:
+                    dx_flee -= nx
+                    dy_flee -= ny
+                    has_threat = True
+                
+                elif other.size < current.size:
+                    dx_chase += nx
+                    dy_chase += ny
+                    has_target = True
 
         if has_threat:
-            current.vx += (dx_total + random.uniform(-1, 1)) * FLEE_FORCE * dt
-            current.vy += (dy_total + random.uniform(-1, 1)) * FLEE_FORCE * dt
+            current.vx += (dx_flee + random.uniform(-0.5, 0.5)) * FLEE_FORCE * dt
+            current.vy += (dy_flee + random.uniform(-0.5, 0.5)) * FLEE_FORCE * dt
+            
+        if has_target:
+            current.vx += (dx_chase + random.uniform(-0.2, 0.2)) * CHASE_FORCE * dt
+            current.vy += (dy_chase + random.uniform(-0.2, 0.2)) * CHASE_FORCE * dt
 
-            size_factor = (current.size - SIZE_MIN) / (SIZE_MAX - SIZE_MIN)
-            local_max = GLOBAL_MAX_SPEED - (size_factor * (GLOBAL_MAX_SPEED - SPEED_MIN))
-            local_max = max(SPEED_MIN, local_max)
+        size_factor = (current.size - SIZE_MIN) / (SIZE_MAX - SIZE_MIN)
+        local_max = GLOBAL_MAX_SPEED - (size_factor * (GLOBAL_MAX_SPEED - SPEED_MIN))
+        local_max = max(SPEED_MIN, local_max)
 
-            # Clamp velocities
-            mag = math.hypot(current.vx, current.vy)
-            if mag > local_max:
-                current.vx = (current.vx / mag) * local_max
-                current.vy = (current.vy / mag) * local_max
-
+        mag = math.hypot(current.vx, current.vy)
+        if mag > local_max:
+            current.vx = (current.vx / mag) * local_max
+            current.vy = (current.vy / mag) * local_max
+            
 def create_squares() -> list[Square]:
     squares: list[Square] = []
     for _ in range(NUM_SQUARES):
