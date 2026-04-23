@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code Explorer - main.py</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+:root { --bg:#1e1e2e; --surface:#2a2a3e; --surface2:#313148; --text:#cdd6f4; --muted:#a6adc8; --accent:#89b4fa; --green:#a6e3a1; --yellow:#f9e2af; --red:#f38ba8; --radius:8px; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:system-ui,-apple-system,sans-serif; line-height:1.6; }
+a { color:var(--accent); }
+header { padding:1.2rem 1.5rem; background:var(--surface); border-bottom:1px solid #3a3a55; }
+header h1 { color:var(--accent); font-size:1.3rem; }
+header p { color:var(--muted); font-size:0.9rem; margin-top:0.3rem; }
+.file-badge { display:inline-block; margin-top:0.3rem; background:var(--surface2); border-radius:6px; padding:0.1rem 0.5rem; color:var(--yellow); }
+.tab-nav { display:flex; flex-wrap:wrap; gap:0; padding:0 1.5rem; background:var(--surface); border-bottom:1px solid #3a3a55; }
+.tab-btn { background:none; border:none; color:var(--muted); padding:0.7rem 1rem; cursor:pointer; border-bottom:2px solid transparent; }
+.tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
+.tab-panel { display:none; padding:1.5rem; max-width:1200px; margin:0 auto; }
+.tab-panel.active { display:block; }
+.card { background:var(--surface); border:1px solid #3a3a55; border-radius:var(--radius); padding:1rem; margin-bottom:1rem; }
+.diag-container { background:var(--surface2); border-radius:var(--radius); padding:1rem; min-height:240px; overflow:auto; }
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+@media (max-width: 860px) { .two-col { grid-template-columns:1fr; } }
+.badge { border-radius:999px; font-size:0.75rem; padding:0.15rem 0.5rem; }
+.badge-high { background:#4a1a2a; color:var(--red); }
+.badge-medium { background:#3e2e10; color:var(--yellow); }
+.badge-low { background:#1a3220; color:var(--green); }
+.review-item { border:1px solid #3a3a55; background:var(--surface2); border-radius:6px; padding:0.6rem; margin-bottom:0.5rem; cursor:pointer; }
+.review-item.selected { border-color:var(--accent); }
+pre { background:#12121e; border:1px solid #2a2a3e; border-radius:6px; padding:0.6rem; overflow:auto; }
+.fallback { background:#2a1215; color:var(--red); border-radius:6px; padding:0.7rem; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Code Learning Dashboard</h1>
+  <span class="file-badge">main.py</span>
+  <p>Focused walkthrough of architecture, execution flow, state transitions, algorithm behavior, potential bugs, and performance notes for <a href="../main.py">main.py</a>.</p>
+</header>
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('architecture', this)">Architecture</button>
+  <button class="tab-btn" onclick="switchTab('patterns', this)">Patterns</button>
+  <button class="tab-btn" onclick="switchTab('typehints', this)">Type Hints</button>
+  <button class="tab-btn" onclick="switchTab('codereview', this)">Code Review</button>
+  <button class="tab-btn" onclick="switchTab('performance', this)">Performance</button>
+  <button class="tab-btn" onclick="switchTab('nextsteps', this)">Next Steps</button>
+</nav>
+<div id="tab-architecture" class="tab-panel active">
+  <div class="card"><h3>Architecture Overview</h3><p>The game uses a loop with input, update, and render. State lives in <code>Square</code> objects, and top-level orchestration lives in <code>main</code>.</p></div>
+  <div class="card"><h3>Execution Flow</h3><p>Each frame computes <code>dt</code>, handles quit events, updates living squares, respawns expired squares, applies flee behavior, and renders frame plus FPS.</p></div>
+  <div class="card"><h3>State Transitions</h3><p>Main transitions from Boot to Running to Stopping. <code>death_time</code> drives per-square transition from alive to replaced.</p></div>
+  <div class="card"><h3>Diagrams</h3>
+    <div class="two-col">
+      <div><h4>Call Graph</h4><div class="diag-container" id="diag-call"></div></div>
+      <div><h4>Dependency Graph</h4><div class="diag-container" id="diag-dep"></div></div>
+    </div>
+    <div style="margin-top:1rem;"><h4>Execution Sequence</h4><div class="diag-container" id="diag-seq"></div></div>
+    <div style="margin-top:1rem;"><h4>State Diagram</h4><div class="diag-container" id="diag-state"></div></div>
+  </div>
+</div>
+<div id="tab-patterns" class="tab-panel">
+  <div class="two-col">
+    <div class="card"><h3>3 Good Patterns</h3><ol><li>Descriptive function names improve readability and debugging speed.</li><li>Entity data in a dataclass keeps related state together.</li><li>Time-based movement with <code>dt</code> reduces frame-rate dependence.</li></ol></div>
+    <div class="card"><h3>2 Potential Issues</h3><ol><li><code>resolve_square_collisions</code> is a placeholder and can mislead expectations.</li><li>No startup validation for constant relationships can cause fragile behavior if constants are changed.</li></ol></div>
+  </div>
+  <div class="card"><h3>Algorithm Notes</h3><p><code>apply_flee_behavior</code> does a pairwise neighbor scan. Smaller squares flee larger ones, larger squares chase smaller ones, then velocity is capped by size-based max speed.</p></div>
+</div>
+<div id="tab-typehints" class="tab-panel"><div class="card"><h3>Type Hint Score: 4 / 5</h3><p>Strengths: typed dataclass fields and typed lists in APIs. Gap: <code>apply_flee_behavior</code> lacks explicit <code>-> None</code>.</p></div></div>
+<div id="tab-codereview" class="tab-panel"><div class="two-col"><div class="card"><div class="review-item selected" id="ri-0" onclick="selectReview(0)">Collision stage is non functional <span class="badge badge-high">high</span></div><div class="review-item" id="ri-1" onclick="selectReview(1)">Spawn fallback can overlap <span class="badge badge-medium">medium</span></div><div class="review-item" id="ri-2" onclick="selectReview(2)">Quadratic flee scaling <span class="badge badge-medium">medium</span></div><div class="review-item" id="ri-3" onclick="selectReview(3)">Magic numbers in behavior <span class="badge badge-low">low</span></div><div class="review-item" id="ri-4" onclick="selectReview(4)">Type hint consistency gap <span class="badge badge-low">low</span></div></div><div class="card" id="review-detail"></div></div></div>
+<div id="tab-performance" class="tab-panel"><div class="card"><h3>Performance Score: 2 / 6</h3><p>Top finding: pairwise flee checks are the first hotspot as square count increases.</p><ul><li>Win: clock.tick(FPS) limits loop speed.</li><li>Win: motion math per square is lightweight.</li><li>Risk: flee behavior is near O(n^2) per frame.</li><li>Risk: FPS text rerender each frame adds overhead at scale.</li></ul></div></div>
+<div id="tab-nextsteps" class="tab-panel"><div class="card"><h3>How to Run</h3><pre>python main.py</pre></div><div class="card"><h3>Where to Modify Behavior</h3><ol><li><a href="../main.py">Top constants</a> for size, count, and speed.</li><li><a href="../main.py">random_square</a> for spawn and lifetime policy.</li><li><a href="../main.py">apply_flee_behavior</a> for steering logic.</li><li><a href="../main.py">resolve_square_collisions</a> to implement collisions.</li></ol></div></div>
+<script>
+function switchTab(name, btn) { document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.getElementById('tab-' + name).classList.add('active'); btn.classList.add('active'); }
+const reviewItems = [
+  {title:'Collision stage is non functional', snippet:'def resolve_square_collisions(squares: list[Square]) -> None:\n    pass', note:'Function is called every frame but has no logic.', hint:'Implement pairwise collision response or remove call.'},
+  {title:'Spawn fallback can overlap', snippet:'return Square(rect=pygame.Rect(0, 0, SIZE_MIN, SIZE_MIN), ...)', note:'Fallback position can overlap in crowded scenes.', hint:'Use extra search strategy before fixed fallback.'},
+  {title:'Quadratic flee scaling', snippet:'for current in squares:\n    for other in squares:', note:'Pairwise scan grows near n squared.', hint:'Use a spatial hash or grid buckets.'},
+  {title:'Magic numbers in behavior', snippet:'FLEE_FORCE = 1000.0\nCHASE_FORCE = 1000.0', note:'Tuning values are scattered in function scope.', hint:'Move tuning constants to top config.'},
+  {title:'Type hint consistency gap', snippet:'def apply_flee_behavior(...):', note:'Missing explicit return annotation.', hint:'Add -> None for consistency.'}
+];
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function selectReview(i) { document.querySelectorAll('.review-item').forEach(el => el.classList.remove('selected')); document.getElementById('ri-' + i).classList.add('selected'); const r = reviewItems[i]; document.getElementById('review-detail').innerHTML = '<h3>' + esc(r.title) + '</h3><p>' + esc(r.note) + '</p><pre>' + esc(r.snippet) + '</pre><p><strong>Improvement:</strong> ' + esc(r.hint) + '</p>'; }
+mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'loose' });
+const diagrams = {
+  call: String.raw`graph TD
+    n1["Program start"] --> n2["Main function"]
+    n2 --> n3["Create squares"]
+    n2 --> n4["Frame update"]
+    n4 --> n5["Square update"]
+    n4 --> n6["Flee behavior"]
+    n4 --> n7["Draw frame"]`,
+  dep: String.raw`graph LR
+    n1["Main file core"] --> n2["Random module use"]
+    n1 --> n3["Math module use"]
+    n1 --> n4["Dataclass use"]
+    n1 --> n5["Pygame library"]
+    click n2 href "https://docs.python.org/3/library/random.html" "Open docs"
+    click n3 href "https://docs.python.org/3/library/math.html" "Open docs"
+    click n4 href "https://docs.python.org/3/library/dataclasses.html" "Open docs"
+    click n5 href "https://www.pygame.org/docs/" "Open docs"`,
+  seq: String.raw`sequenceDiagram
+    participant p1 as "Main loop"
+    participant p2 as "Clock tick"
+    participant p3 as "Event queue"
+    participant p4 as "Square item"
+    participant p5 as "Render stage"
+    p1->>p2: Tick clock now
+    p2-->>p1: Return delta time
+    p1->>p3: Pull events now
+    p3-->>p1: Return event list
+    p1->>p4: Update each square
+    p4-->>p1: Return alive state
+    p1->>p5: Draw frame now
+    p5-->>p1: Flip display done`,
+  state: String.raw`stateDiagram-v2
+    state "Boot phase" as s1
+    state "Run frame" as s2
+    state "Quit check" as s3
+    state "Stop phase" as s4
+    [*] --> s1
+    s1 --> s2
+    s2 --> s3
+    s3 --> s2
+    s3 --> s4
+    s4 --> [*]`
+};
+async function renderDiag(key, id) { const c = document.getElementById(id); try { const { svg } = await mermaid.render('m-' + key + '-' + id, diagrams[key]); c.innerHTML = svg; } catch (e) { c.innerHTML = '<pre class="fallback">Render failed: ' + e.message + '\n\nSource:\n' + diagrams[key] + '</pre>'; } }
+window.addEventListener('DOMContentLoaded', async () => { selectReview(0); await renderDiag('call','diag-call'); await renderDiag('dep','diag-dep'); await renderDiag('seq','diag-seq'); await renderDiag('state','diag-state'); });
+</script>
+</body>
+</html>
