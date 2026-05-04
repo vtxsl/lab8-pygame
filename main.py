@@ -103,13 +103,36 @@ def random_square(existing: list[Square], newsize) -> Square:
         death_time=pygame.time.get_ticks() + 5000
     )
 
-# def resolve_square_collisions(squares: list[Square]) -> None:
-#     pass
+def resolve_square_collisions(squares: list[Square]) -> list[Square]:
+    to_remove = set()
+    
+    for i in range(len(squares)):
+        for j in range(i + 1, len(squares)):
+            s1 = squares[i]
+            s2 = squares[j]
+
+            if check_collision(s1, s2):
+                if s1.size > s2.size:
+                    to_remove.add(j)
+                elif s2.size > s1.size:
+                    to_remove.add(i)
+                else:
+                    to_remove.add(j)
+                    
+    new_squares = []
+    for index, s in enumerate(squares):
+        if index in to_remove:  
+            new_squares.append(random_square(new_squares, s.size))
+        else:
+            new_squares.append(s)
+            
+    return new_squares
+
 
 def check_collision(self: Square, other: Square) -> bool:
         if self.rect.colliderect(other.rect):
             return True
-
+        
 def apply_flee_behavior(squares: list[Square], dt: float, danger_radius: int = 180):
     FLEE_FORCE = 1000.0 
     CHASE_FORCE = 1000.0
@@ -200,12 +223,9 @@ def main() -> None:
                 alive_squares.append(square)
             else:
                 alive_squares.append(random_square(alive_squares, square.size))
+                
+        squares = resolve_square_collisions(alive_squares)
         
-        squares = alive_squares
-        
-
-        # resolve_square_collisions(squares)
-        check_collision
         apply_flee_behavior(squares, dt)
         
         screen.fill(COLOR_BG)
