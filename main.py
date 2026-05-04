@@ -27,23 +27,44 @@ class Square:
     death_time: int
 
     def update(self, width: int, height: int, dt: float) -> bool:
+        # self.px += self.vx * dt
+        # self.py += self.vy * dt
+        
+        # self.rect.x = int(self.px)
+        # self.rect.y = int(self.py)
+
+        # if self.rect.left <= 0 or self.rect.right >= width:
+        #     self.vx *= -1
+        #     self.px = max(0, min(self.px, width - self.size))
+        #     self.rect.x = int(self.px)
+
+        # if self.rect.top <= 0 or self.rect.bottom >= height:
+        #     self.vy *= -1
+        #     self.py = max(0, min(self.py, height - self.size))
+        #     self.rect.y = int(self.py)
+            
+        # return pygame.time.get_ticks() < self.death_time
+    
+    
         self.px += self.vx * dt
         self.py += self.vy * dt
         
+        if self.px > width:
+            self.px = -self.size
+        elif self.px + self.size < 0:
+            self.px = width
+
+        if self.py > height:
+            self.py = -self.size
+        elif self.py + self.size < 0:
+            self.py = height
+
         self.rect.x = int(self.px)
         self.rect.y = int(self.py)
-
-        if self.rect.left <= 0 or self.rect.right >= width:
-            self.vx *= -1
-            self.px = max(0, min(self.px, width - self.size))
-            self.rect.x = int(self.px)
-
-        if self.rect.top <= 0 or self.rect.bottom >= height:
-            self.vy *= -1
-            self.py = max(0, min(self.py, height - self.size))
-            self.rect.y = int(self.py)
-            
+    
         return pygame.time.get_ticks() < self.death_time
+    
+    
 
     def draw(self, surface: pygame.Surface) -> None:
         pygame.draw.rect(surface, self.color, self.rect)
@@ -177,6 +198,7 @@ def main() -> None:
                 alive_squares.append(random_square(alive_squares, square.size))
         
         squares = alive_squares
+        
 
         # resolve_square_collisions(squares)
         apply_flee_behavior(squares, dt)
