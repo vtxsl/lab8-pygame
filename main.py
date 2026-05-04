@@ -103,8 +103,12 @@ def random_square(existing: list[Square], newsize) -> Square:
         death_time=pygame.time.get_ticks() + 5000
     )
 
-def resolve_square_collisions(squares: list[Square]) -> None:
-    pass
+# def resolve_square_collisions(squares: list[Square]) -> None:
+#     pass
+
+def check_collision(self: Square, other: Square) -> bool:
+        if self.rect.colliderect(other.rect):
+            return True
 
 def apply_flee_behavior(squares: list[Square], dt: float, danger_radius: int = 180):
     FLEE_FORCE = 1000.0 
@@ -201,6 +205,7 @@ def main() -> None:
         
 
         # resolve_square_collisions(squares)
+        check_collision
         apply_flee_behavior(squares, dt)
         
         screen.fill(COLOR_BG)
