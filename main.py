@@ -15,6 +15,7 @@ COLOR_BG = (24, 24, 32)
 COLOR_FPS = (245, 245, 245)
 FPS_TEXT_POS = (10, 10)
 TRAILS_LENGTH = 30
+TEST_MODE_ON: bool = True
 
 @dataclass
 class Square:
