@@ -48,8 +48,9 @@ class Square:
     def draw(self, surface: pygame.Surface) -> None:
         pygame.draw.rect(surface, self.color, self.rect)
 
-def random_square(existing: list[Square]) -> Square:
-    size = random.randint(SIZE_MIN, SIZE_MAX)
+def random_square(existing: list[Square], newsize) -> Square:
+    size = newsize
+    # size = random.randint(SIZE_MIN, SIZE_MAX)
     
     size_factor = (size - SIZE_MIN) / (SIZE_MAX - SIZE_MIN)
     local_max = int(GLOBAL_MAX_SPEED - (size_factor * (GLOBAL_MAX_SPEED - SPEED_MIN)))
@@ -133,10 +134,18 @@ def apply_flee_behavior(squares: list[Square], dt: float, danger_radius: int = 1
             current.vx = (current.vx / mag) * local_max
             current.vy = (current.vy / mag) * local_max
             
-def create_squares() -> list[Square]:
-    squares: list[Square] = []
-    for _ in range(NUM_SQUARES):
-        squares.append(random_square(squares))
+# def create_squares() -> list[Square]:
+#     squares: list[Square] = []
+#     for _ in range(NUM_SQUARES):
+#         squares.append(random_square(squares))
+#     return squares
+
+def create_squares():
+    squares = []
+    configs = [[5, 25], [10, 10], [30, 4]]
+    for count, size in configs:
+        for _ in range(count):
+            squares.append(random_square(squares, size))
     return squares
 
 def draw_fps(surface: pygame.Surface, font: pygame.font.Font, clock: pygame.time.Clock) -> None:
@@ -165,11 +174,11 @@ def main() -> None:
             if square.update(WINDOW_WIDTH, WINDOW_HEIGHT, dt):
                 alive_squares.append(square)
             else:
-                alive_squares.append(random_square(alive_squares))
+                alive_squares.append(random_square(alive_squares, square.size))
         
         squares = alive_squares
 
-        resolve_square_collisions(squares)
+        # resolve_square_collisions(squares)
         apply_flee_behavior(squares, dt)
         
         screen.fill(COLOR_BG)
