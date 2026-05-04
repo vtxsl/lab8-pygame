@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Architecture - lab8-pygame</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #4b5563;
+      --line: #d1d5db;
+      --accent: #0f766e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      background: radial-gradient(circle at top right, #e6fffb, transparent 50%), var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+    h1, h2 {
+      line-height: 1.2;
+      margin: 0 0 0.75rem 0;
+    }
+    .lead {
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+    }
+    .mermaid {
+      overflow-x: auto;
+    }
+    ul {
+      margin: 0.5rem 0 0 1.2rem;
+      padding: 0;
+    }
+    code {
+      background: #eef2ff;
+      padding: 0.1rem 0.3rem;
+      border-radius: 4px;
+    }
+    @media (max-width: 640px) {
+      .wrap {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>Architecture Documentation</h1>
+    <p class="lead">Concrete architecture for the pygame square simulation with primary execution path in <code>main.py</code>.</p>
+
+    <section class="card">
+      <h2>Scope and Entry Points</h2>
+      <ul>
+        <li>Primary runtime entry point: <code>main.py</code> via <code>if __name__ == "__main__": main()</code>.</li>
+        <li>Secondary variant implementation: <code>withcol.py</code> (similar structure, integer-velocity version).</li>
+        <li>Primary execution path documented below is from <code>main.py</code>.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Module Dependency Graph</h2>
+      <div class="mermaid">
+        graph LR
+            M["main.py"] --> R["random"]
+            M --> D["dataclasses.dataclass"]
+            M --> P["pygame"]
+            M --> H["math"]
+            M --> S["Square Dataclass"]
+            M --> F["Top-Level Functions"]
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>High-Level Runtime Flow</h2>
+      <div class="mermaid">
+        graph TD
+            A["Process Start"] --> B["Initialize pygame"]
+            B --> C["Create Window, Clock, Font"]
+            C --> D["Create Initial Squares"]
+            D --> E["Enter Main Loop"]
+            E --> F["Tick Clock and Compute dt"]
+            F --> G["Process Events"]
+            G --> H{"Quit Event?"}
+            H -->|"Yes"| I["Set running = False"]
+            H -->|"No"| J["Update or Respawn Squares"]
+            I --> T["Quit pygame and Exit"]
+            J --> K["Resolve Collisions (Currently No-Op)"]
+            K --> L["Apply Flee/Chase Behavior"]
+            L --> M2["Clear Screen"]
+            M2 --> N["Draw Squares"]
+            N --> O["Draw FPS"]
+            O --> P2["Flip Display"]
+            P2 --> E
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Function-Level Call Graph</h2>
+      <div class="mermaid">
+        graph TD
+            START["__main__ Guard"] --> MAIN["main()"]
+
+            MAIN --> INIT["pygame.init()"]
+            MAIN --> SETMODE["pygame.display.set_mode()"]
+            MAIN --> CAPTION["pygame.display.set_caption()"]
+            MAIN --> CLOCK["pygame.time.Clock()"]
+            MAIN --> FONT["pygame.font.Font(...)"]
+            MAIN --> CREATE["create_squares()"]
+
+            CREATE --> RS1["random_square(existing)"]
+
+            MAIN --> EVENTGET["pygame.event.get()"]
+            MAIN --> TICK["clock.tick(FPS)"]
+
+            MAIN --> SQUPDATE["Square.update(width, height, dt)"]
+            MAIN --> RS2["random_square(alive_squares)"]
+
+            MAIN --> COLL["resolve_square_collisions(squares)"]
+            MAIN --> FLEE["apply_flee_behavior(squares, dt)"]
+
+            MAIN --> FILL["screen.fill(COLOR_BG)"]
+            MAIN --> SQDRAW["Square.draw(screen)"]
+            MAIN --> DFPS["draw_fps(screen, font, clock)"]
+            DFPS --> GETFPS["clock.get_fps()"]
+            DFPS --> RENDER["font.render(...)"]
+            DFPS --> BLIT["surface.blit(...)"]
+
+            MAIN --> FLIP["pygame.display.flip()"]
+            MAIN --> QUIT["pygame.quit()"]
+
+            FLEE --> HYPOT1["math.hypot(dx, dy)"]
+            FLEE --> HYPOT2["math.hypot(vx, vy)"]
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Primary Execution Sequence (Full)</h2>
+      <div class="mermaid">
+        sequenceDiagram
+            participant BOOT as "Python Runtime"
+            participant APP as "main()"
+            participant PG as "pygame"
+            participant CLK as "Clock"
+            participant EVT as "Event Queue"
+            participant SQ as "Square Objects"
+            participant AI as "apply_flee_behavior()"
+            participant REN as "Renderer"
+
+            BOOT->>APP: "Call main()"
+            APP->>PG: "init()"
+            APP->>PG: "display.set_mode()"
+            APP->>PG: "display.set_caption()"
+            APP->>CLK: "Create Clock"
+            APP->>APP: "create_squares()"
+            loop "For NUM_SQUARES"
+                APP->>APP: "random_square(existing)"
+            end
+
+            loop "While running is True"
+                APP->>CLK: "tick(FPS)"
+                CLK-->>APP: "dt (seconds)"
+
+                APP->>EVT: "event.get()"
+                EVT-->>APP: "events list"
+
+                alt "QUIT event present"
+                    APP->>APP: "running = False"
+                else "No QUIT"
+                    APP->>SQ: "update(width, height, dt) for each square"
+                    alt "Square still alive"
+                        SQ-->>APP: "True"
+                        APP->>APP: "append existing square"
+                    else "Square expired"
+                        SQ-->>APP: "False"
+                        APP->>APP: "random_square(alive_squares)"
+                        APP->>APP: "append replacement square"
+                    end
+
+                    APP->>APP: "resolve_square_collisions(squares)"
+                    Note over APP: "Current implementation is pass"
+                    APP->>AI: "apply_flee_behavior(squares, dt)"
+
+                    APP->>REN: "screen.fill(COLOR_BG)"
+                    APP->>SQ: "draw(screen) for each square"
+                    APP->>APP: "draw_fps(screen, font, clock)"
+                    APP->>PG: "display.flip()"
+                end
+            end
+
+            APP->>PG: "quit()"
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Key Architectural Notes</h2>
+      <ul>
+        <li>The simulation uses an update-render loop with time-based motion (<code>dt</code>).</li>
+        <li>Square lifetime is enforced by <code>death_time</code>; expired squares are replaced during the frame update stage.</li>
+        <li>Behavior steering is pairwise across all squares (O(n^2) checks in <code>apply_flee_behavior</code>).</li>
+        <li>Collision stage exists in the pipeline but is currently a no-op (<code>pass</code>).</li>
+        <li><code>withcol.py</code> is an alternate script that keeps a similar loop shape but uses integer-step movement and a placeholder collision block with commented logic.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      securityLevel: "loose",
+      theme: "default"
+    });
+  </script>
+</body>
+</html>
