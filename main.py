@@ -14,6 +14,7 @@ GLOBAL_MAX_SPEED = 480
 COLOR_BG = (24, 24, 32)
 COLOR_FPS = (245, 245, 245)
 FPS_TEXT_POS = (10, 10)
+TRAILS_LENGTH = 30
 
 @dataclass
 class Square:
@@ -25,6 +26,8 @@ class Square:
     size: int
     color: tuple[int, int, int]
     death_time: int
+    history: list[pygame.Vector2]
+    
 
     def update(self, width: int, height: int, dt: float) -> bool:
         # self.px += self.vx * dt
@@ -44,20 +47,27 @@ class Square:
         #     self.rect.y = int(self.py)
             
         # return pygame.time.get_ticks() < self.death_time
-    
+        
+        self.history.append(pygame.Vector2(self.rect.center))
+        if len(self.history) > TRAILS_LENGTH:
+            self.history.pop(0)
     
         self.px += self.vx * dt
         self.py += self.vy * dt
         
         if self.px > width:
             self.px = -self.size
+            self.history.clear()
         elif self.px + self.size < 0:
             self.px = width
+            self.history.clear()
 
         if self.py > height:
             self.py = -self.size
+            self.history.clear()
         elif self.py + self.size < 0:
             self.py = height
+            self.history.clear()
 
         self.rect.x = int(self.px)
         self.rect.y = int(self.py)
@@ -68,6 +78,8 @@ class Square:
 
     def draw(self, surface: pygame.Surface) -> None:
         pygame.draw.rect(surface, self.color, self.rect)
+        if len(self.history) >= 2:
+            pygame.draw.lines(surface, self.color, False, self.history, 2)
 
 def random_square(existing: list[Square], newsize) -> Square:
     size = newsize
@@ -93,7 +105,8 @@ def random_square(existing: list[Square], newsize) -> Square:
                 py=float(y),
                 size=size,
                 color=(random.randint(60, 255), random.randint(60, 255), random.randint(60, 255)),
-                death_time=death_time
+                death_time=death_time,
+                history=[]
             )
 
     return Square(
@@ -132,11 +145,12 @@ def resolve_square_collisions(squares: list[Square]) -> list[Square]:
 
 def growth(bigger: Square, eaten: int):
     gr_amt = int(eaten * 0.2)
-    bigger.size += gr_amt
+    old_center = bigger.rect.center
     
+    bigger.size += gr_amt
     bigger.rect.width = bigger.size
     bigger.rect.height = bigger.size
-    
+    bigger.rect.center = old_center
     bigger.px = float(bigger.rect.x)
     bigger.py = float(bigger.rect.y)
 
