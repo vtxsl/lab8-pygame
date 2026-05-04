@@ -113,8 +113,10 @@ def resolve_square_collisions(squares: list[Square]) -> list[Square]:
 
             if check_collision(s1, s2):
                 if s1.size > s2.size:
+                    growth(s1, s2.size)
                     to_remove.add(j)
                 elif s2.size > s1.size:
+                    growth(s2, s1.size)
                     to_remove.add(i)
                 else:
                     to_remove.add(j)
@@ -127,6 +129,16 @@ def resolve_square_collisions(squares: list[Square]) -> list[Square]:
             new_squares.append(s)
             
     return new_squares
+
+def growth(bigger: Square, eaten: int):
+    gr_amt = int(eaten * 0.2)
+    bigger.size += gr_amt
+    
+    bigger.rect.width = bigger.size
+    bigger.rect.height = bigger.size
+    
+    bigger.px = float(bigger.rect.x)
+    bigger.py = float(bigger.rect.y)
 
 
 def check_collision(self: Square, other: Square) -> bool:
